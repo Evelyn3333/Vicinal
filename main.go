@@ -109,7 +109,7 @@ const (
 	//PROJECT_ID = "around-xxx"
 	//BT_INSTANCE = "around-post"
 	// Needs to update this URL if you deploy it to cloud.
-	ES_URL = "http://35.224.7.157:9200" /////每次启动要改 IP 地址
+	ES_URL = "http://104.198.29.250:9200" /////每次启动要改 IP 地址
 )
 
 func handlerSearch(w http.ResponseWriter, r *http.Request) {
