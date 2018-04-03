@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"reflect"
 	"github.com/pborman/uuid"
-	"context"
-	"cloud.google.com/go/bigtable"
+//	"context"
+//	"cloud.google.com/go/bigtable"
 )
 
 type Location struct {
@@ -63,21 +63,40 @@ func main() {
 	http.HandleFunc("/search", handlerSearch)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-func handlerPost(w http.ResponseWriter, r *http.Request) {
+func handlerPost(w http.ResponseWriter, r *http.Request){
 	// Parse from body of request to get a json object.
-	fmt.Println("Received one post request")
-	decoder := json.NewDecoder(r.Body)
-	var p Post
-	if err := decoder.Decode(&p); err != nil {
-		panic(err)
-		return
-	}
-	id := uuid.New()
-	// Save to ES.
-	saveToES(&p, id)
-	fmt.Printf("Post is saved to Index: %s\n", p.Message)
+        fmt.Println("Received one post request")
+        decoder := json.NewDecoder(r.Body)
+        var p Post
+        if err := decoder.Decode(&p); err != nil {
+                panic(err)
+                return
+        }
 
-	ctx := context.Background()
+        // Create a client
+        es_client, err := elastic.NewClient(elastic.SetURL(ES_URL), elastic.SetSniff(false))
+        if err != nil {
+                panic(err)
+                return
+        }
+
+        id := uuid.New()
+
+        // Save it to index
+        _, err = es_client.Index().
+                Index(INDEX).
+                Type(TYPE).
+                Id(id).
+                BodyJson(p).
+                Refresh(true).
+                Do()
+        if err != nil {
+                panic(err)
+                return
+        }
+
+        fmt.Printf("Post is saved to Index: %s\n", p.Message)
+	/*ctx := context.Background()
 	//update project name here
 	bt_client, err := bigtable.NewClient(ctx, "the-option-199021", "around-post")
 	if err != nil {
@@ -100,7 +119,7 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("Post is saved to BigTable: %s\n", p.Message)
-
+*/
 }
 
 // Save a post to ElasticSearch
@@ -136,7 +155,7 @@ const (
 	PROJECT_ID = "the-option-199021"
 	BT_INSTANCE = "around-post"
 	// Needs to update this URL if you deploy it to cloud.
-	ES_URL = "http://35.188.135.203:9200" //////////////////////////////////每次启动要改 IP 地址
+	ES_URL = "http://35.192.82.40:9200" //////////////////////////////////每次启动要改 IP 地址
 )
 
 func handlerSearch(w http.ResponseWriter, r *http.Request) {
