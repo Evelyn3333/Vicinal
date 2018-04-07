@@ -9,16 +9,11 @@ import (
 	"strconv"
 	"reflect"
 	"github.com/pborman/uuid"
-<<<<<<< HEAD
 	"context"
 	"cloud.google.com/go/storage"
 	//"cloud.google.com/go/bigtable"
 	"io"
 
-=======
-//	"context"
-//	"cloud.google.com/go/bigtable"
->>>>>>> 15f70cd042ac7181920bbb28ff1b3e3d63231956
 )
 
 type Location struct {
@@ -84,67 +79,6 @@ func main() {
 	http.HandleFunc("/search", handlerSearch)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-<<<<<<< HEAD
-=======
-func handlerPost(w http.ResponseWriter, r *http.Request){
-	// Parse from body of request to get a json object.
-        fmt.Println("Received one post request")
-        decoder := json.NewDecoder(r.Body)
-        var p Post
-        if err := decoder.Decode(&p); err != nil {
-                panic(err)
-                return
-        }
-
-        // Create a client
-        es_client, err := elastic.NewClient(elastic.SetURL(ES_URL), elastic.SetSniff(false))
-        if err != nil {
-                panic(err)
-                return
-        }
-
-        id := uuid.New()
-
-        // Save it to index
-        _, err = es_client.Index().
-                Index(INDEX).
-                Type(TYPE).
-                Id(id).
-                BodyJson(p).
-                Refresh(true).
-                Do()
-        if err != nil {
-                panic(err)
-                return
-        }
-
-        fmt.Printf("Post is saved to Index: %s\n", p.Message)
-	/*ctx := context.Background()
-	//update project name here
-	bt_client, err := bigtable.NewClient(ctx, "the-option-199021", "around-post")
-	if err != nil {
-		panic(err)
-		return
-	}
-
-	tbl := bt_client.Open("post")
-	mut := bigtable.NewMutation()
-	t := bigtable.Now()
-
-	mut.Set("post", "user", t, []byte(p.User))
-	mut.Set("post", "message", t, []byte(p.Message))
-	mut.Set("location", "lat", t, []byte(strconv.FormatFloat(p.Location.Lat, 'f', -1, 64)))
-	mut.Set("location", "lon", t, []byte(strconv.FormatFloat(p.Location.Lon, 'f', -1, 64)))
-
-	err = tbl.Apply(ctx, id, mut)
-	if err != nil {
-		panic(err)
-		return
-	}
-	fmt.Printf("Post is saved to BigTable: %s\n", p.Message)
-*/
-}
->>>>>>> 15f70cd042ac7181920bbb28ff1b3e3d63231956
 
 // Save a post to ElasticSearch
 func saveToES(p *Post, id string) {
@@ -171,7 +105,6 @@ func saveToES(p *Post, id string) {
 	fmt.Printf("Post is saved to Index: %s\n", p.Message)
 }
 
-<<<<<<< HEAD
 
 func saveToGCS(ctx context.Context, r io.Reader, bucket, name string) (*storage.ObjectHandle, *storage.ObjectAttrs, error) {
 	client, err := storage.NewClient(ctx)
@@ -199,18 +132,6 @@ func saveToGCS(ctx context.Context, r io.Reader, bucket, name string) (*storage.
 	fmt.Printf("Post is saved to GCS : %s \n", attrs.MediaLink)
 	return obj, attrs, err
 }
-=======
-const (
-	INDEX    = "around"
-	TYPE     = "post"
-	DISTANCE = "200km"
-	// Needs to update
-	PROJECT_ID = "the-option-199021"
-	BT_INSTANCE = "around-post"
-	// Needs to update this URL if you deploy it to cloud.
-	ES_URL = "http://35.192.82.40:9200" //////////////////////////////////每次启动要改 IP 地址
-)
->>>>>>> 15f70cd042ac7181920bbb28ff1b3e3d63231956
 
 func handlerSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Received one request for search")
